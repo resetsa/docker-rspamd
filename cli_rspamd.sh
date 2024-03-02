@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# WARNING - basic requirement
+# return exit code 0 - for spam or any error in work
+# return exit code 1 - for not spam message (rspamd score is negative)
+
 SPAM_EXITLEVEL=0
 CLEAN_EXITLEVEL=1
 
