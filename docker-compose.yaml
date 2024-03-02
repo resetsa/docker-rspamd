@@ -1,0 +1,27 @@
+services:
+  rspamd:
+    image: rspamd/rspamd
+    container_name: rspamd
+    depends_on:
+      - redis
+    environment:
+      - RSPAMD_DNS_SERVERS=round-robin:192.168.40.62:53
+      - RSPAMD_REDIS_SERVERS=redis
+      - RSPAMD_USE_BAYES=1
+#      - RSPAMD_USE_GREYLIST=1
+    networks:
+      - INTERNAL
+    ports:
+      - 11332:11332
+      - 11333:11333
+      - 11334:11334
+
+  redis:
+    command: "redis-server --save 60 1 --loglevel warning"
+    image: "redis:latest"
+    networks:
+      - INTERNAL
+
+networks:
+  INTERNAL:
+  
