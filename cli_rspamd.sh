@@ -16,6 +16,8 @@ RSPAMD_URL="http://localhost:11333/checkv2"
 MAX_TIMEOUT=30
 CONN_TIMEOUT=3
 
+DEBUG=""
+
 function usage {
   echo "Usage: $0 -m EML_FILE [-u RSPAMD_URL] [-d]"
   echo "Default:"
@@ -33,8 +35,6 @@ function printline {
     result=$LOG_DELIM
     # build output string
     for a in "${args[@]}"; do
-        #printf "%s;%s;%s\n" "$@"
-        #printf "%s%s" "${a}" $LOG_DELIM
         result="${result}${a}${LOG_DELIM}"
     done
     # print without first and last symbols
@@ -90,6 +90,9 @@ function parse_param
 
 START=$(date +%s.%N)
 parse_param "$@"
+
+set -o nounset
+set -o pipefail
 
 # check file exist
 log $LOGLEVEL_DEBUG "check $FNAME exist"
