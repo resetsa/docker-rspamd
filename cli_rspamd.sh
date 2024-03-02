@@ -10,6 +10,7 @@ CLEAN_EXITLEVEL=1
 LOGLEVEL_ERROR="ERROR"
 LOGLEVEL_DEBUG="DEBUG"
 LOGLEVEL_INFO="INFO"
+LOG_DELIM="|"
 
 RSPAMD_URL="http://localhost:11333/checkv2"
 MAX_TIMEOUT=30
@@ -17,7 +18,7 @@ CONN_TIMEOUT=3
 
 function usage {
   echo "Usage: $0 -m EML_FILE [-u RSPAMD_URL] [-d]"
-  echo "Defaults:"
+  echo "Default:"
   echo "    RSPAMD_URL=http://localhost:11333/checkv2"
 }
 
@@ -26,6 +27,21 @@ function calc {
     awk "BEGIN { print $*}";
 }
 
+# output log line
+function printline {
+    args=("$@")
+    result=$LOG_DELIM
+    # build output string
+    for a in "${args[@]}"; do
+        #printf "%s;%s;%s\n" "$@"
+        #printf "%s%s" "${a}" $LOG_DELIM
+        result="${result}${a}${LOG_DELIM}"
+    done
+    # print without first and last symbols
+    printf "%s\n" "${result:1:-1}"
+}
+
+# log
 function log {
     TIMESTAMP=$(date +"%d-%m-%Y %H:%M:%S.%N")
     LEVEL=$1
@@ -34,11 +50,11 @@ function log {
     shift
     if [ "$LEVEL" == "$LOGLEVEL_DEBUG" ]; then
         if ! [ "$DEBUG" == "" ]; then
-            printf "%s;%s;%s\n" "${TIMESTAMP}" "${LEVEL}" "${MESSAGE}"
+            printline "${TIMESTAMP}" "${LEVEL}" "${MESSAGE}"
         fi
         return
     fi
-    printf "%s;%s;%s\n" "${TIMESTAMP}" "${LEVEL}" "${MESSAGE}"
+    printline "${TIMESTAMP}" "${LEVEL}" "${MESSAGE}"
 }
 
 function check_bin {
@@ -117,10 +133,10 @@ RUNTIME=$(calc "$END-$START")
 
 # check score is negative - not spam
 if [[ $SCORE == "-"* ]]; then
-    log $LOGLEVEL_INFO "file $FNAME is not spam, score=$SCORE, runtime=$RUNTIME, req_runtime=$REQ_RUNTIME"
+    log $LOGLEVEL_INFO "file $FNAME is not spam, score=$SCORE, runtime=${RUNTIME}s, req_runtime=${REQ_RUNTIME}s"
     exit $CLEAN_EXITLEVEL
 fi
 
 # else - spam
-log $LOGLEVEL_INFO "file $FNAME is spam, score=$SCORE, runtime=$RUNTIME, req_runtime=$REQ_RUNTIME"
+log $LOGLEVEL_INFO "file $FNAME is spam, score=$SCORE, runtime=${RUNTIME}s, req_runtime=${REQ_RUNTIME}s"
 exit $SPAM_EXITLEVEL
